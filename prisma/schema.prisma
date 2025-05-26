@@ -10,8 +10,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Todo {
-  id Int @id @default(autoincrement())
-  title String
-  isCompleted Boolean @default(false)
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  priority    Priority   @default(MEDIUM)
+  columnId    String     // "todo", "inprogress", "done" のいずれか
+  position    Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("tasks")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
 }

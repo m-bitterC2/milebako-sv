@@ -1,6 +1,6 @@
-## milebako - Backend
+## Milebako - Backend
 
-**milebako**は、シンプルなタスク管理アプリです。（milebako=「マイルストーン」+「箱」の造語）
+**Milebako**は、シンプルなタスク管理アプリです。
 
 このリポジトリでは、バックエンドのソースコードを管理します。
 
@@ -13,7 +13,7 @@
 | 言語/実行環境      | TypeScript, Node.js  |
 | Web フレームワーク | Express              |
 | バリデーション     | Zod                  |
-| ORM/DB             | Prisma + SQLite      |
+| ORM/DB             | Prisma + PostgreSQL  |
 | エラーハンドラ     | カスタムミドルウェア |
 
 ---
@@ -34,12 +34,13 @@ npm install express cors zod prisma @prisma/client
 npm install --save-dev typescript ts-node nodemon @types/express @types/cors @types/node
 ```
 
-### 3. Prisma セットアップ
+### 3. Prisma セットアップとダミーデータ挿入
 
 ```bash
 npx prisma init --datasource-provider sqlite
 npx prisma migrate dev --name init
 npx prisma generate
+npx prisma db seed
 ```
 
 ### 4. サーバー起動

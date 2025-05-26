@@ -65,7 +65,7 @@ if (!isProduction) {
   app.use(
     cors({
       origin: "http://localhost:3000",
-      methods: ["GET", "POST", "PUT", "DELETE"],
+      methods: ["GET", "POST", "PATCH", "DELETE"],
       allowedHeaders: ["Content-Type", "Accept"],
       credentials: false, // 認証なしのため false
     })
@@ -75,7 +75,7 @@ if (!isProduction) {
   app.use(
     cors({
       origin: process.env.ALLOWED_ORIGIN,
-      methods: ["GET", "POST", "PUT", "DELETE"],
+      methods: ["GET", "POST", "PATCH", "DELETE"],
       allowedHeaders: ["Content-Type", "Accept"],
       credentials: false,
     })

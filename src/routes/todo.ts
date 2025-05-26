@@ -1,77 +1,123 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { createTodoSchema, editTodoSchema } from "../validators/todoValidator";
+import {
+  CreateTodoSchema,
+  UpdateTodoSchema,
+  ReorderTodosSchema,
+  TodoParamsSchema,
+} from "../validators/todoValidator";
 import asyncHandler from "../utils/asyncHandler";
 
 // Prismaクライアントの初期化
 const prisma = new PrismaClient();
 
 /**
- * すべてのTodoを取得する
+ * GET /todos/all - 全タスク取得
  */
 const getAllTodos = asyncHandler(async (_req: Request, res: Response) => {
-  const todos = await prisma.todo.findMany();
-  res.json(todos);
+  const tasks = await prisma.task.findMany({
+    orderBy: [{ columnId: "asc" }, { position: "asc" }],
+  });
+
+  res.status(200).json(tasks);
 });
 
 /**
- * 新しいTodoを作成する
- * リクエストボディを zod でバリデーション
+ * POST /todos - タスク作成
  */
 const createTodo = asyncHandler(async (req: Request, res: Response) => {
-  // バリデーション（失敗時は例外をスロー）
-  const { title, isCompleted } = createTodoSchema.parse(req.body);
+  const { title, description, priority, columnId, position } =
+    CreateTodoSchema.parse(req.body);
 
-  const newTodo = await prisma.todo.create({
-    data: { title, isCompleted },
+  const newTodo = await prisma.task.create({
+    data: { title, description, priority, columnId, position },
   });
+
   res.status(201).json(newTodo);
 });
 
 /**
- * Todoを編集する
- * パスパラメータ id を数値に変換し、リクエストボディを zod でバリデーション
+ * PATCH /todos/:id - タスク更新
  */
 const editTodo = asyncHandler(async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) {
-    const error: any = new Error("無効なIDパラメータです。");
-    error.status = 400;
-    throw error;
+  const { id } = TodoParamsSchema.parse(req.params);
+  const updateData = UpdateTodoSchema.parse(req.body);
+
+  // タスクの存在確認
+  const existingTodo = await prisma.task.findUnique({
+    where: { id },
+  });
+
+  if (!existingTodo) {
+    res.status(404).json({ error: "タスクが見つかりません" });
   }
 
-  // バリデーション（失敗時は例外をスロー）
-  const { title, isCompleted } = editTodoSchema.parse(req.body);
-
-  const updatedTodo = await prisma.todo.update({
+  const updatedTodo = await prisma.task.update({
     where: { id },
-    data: { title, isCompleted },
+    data: updateData,
   });
-  res.json(updatedTodo);
+
+  res.status(200).json(updatedTodo);
 });
 
 /**
- * Todoを削除する
+ * PATCH /todos/reorder - タスク並び替え
  */
-const deleteTodo = asyncHandler(async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  if (isNaN(id)) {
-    const error: any = new Error("無効なIDパラメータです。");
-    error.status = 400;
-    throw error;
+const reorderTodos = asyncHandler(async (req: Request, res: Response) => {
+  const { tasks } = ReorderTodosSchema.parse(req.body);
+
+  // 全てのタスクIDが存在するかチェック
+  const taskIds = tasks.map((task) => task.id);
+  const existingTasks = await prisma.task.findMany({
+    where: { id: { in: taskIds } },
+    select: { id: true },
+  });
+
+  if (existingTasks.length !== taskIds.length) {
+    res.status(400).json({ error: "有効なタスクリストを指定してください" });
   }
 
-  const deletedTodo = await prisma.todo.delete({
+  // トランザクションで一括更新
+  await prisma.$transaction(
+    tasks.map((task) =>
+      prisma.task.update({
+        where: { id: task.id },
+        data: { position: task.position },
+      })
+    )
+  );
+
+  res.status(200).json({ message: "タスクの並び替えが完了しました" });
+});
+
+/**
+ * DELETE /todos/:id - タスク削除
+ */
+const deleteTodo = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = TodoParamsSchema.parse(req.params);
+
+  // タスクの存在確認
+  const existingTodo = await prisma.task.findUnique({
     where: { id },
   });
-  res.json(deletedTodo);
+
+  if (!existingTodo) {
+    res.status(404).json({ error: "タスクが見つかりません" });
+  }
+
+  await prisma.task.delete({
+    where: { id },
+  });
+
+  res.status(204).json();
 });
 
 // ルーティング設定
 const router = Router();
 router.get("/all", getAllTodos);
 router.post("/create", createTodo);
-router.put("/edit/:id", editTodo);
+router.patch("/edit/:id", editTodo);
+router.patch("/reorder", reorderTodos);
 router.delete("/delete/:id", deleteTodo);
 
 export default router;
