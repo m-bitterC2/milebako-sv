@@ -6,7 +6,7 @@
 
 ---
 
-### 技術スタック
+#### 技術スタック
 
 | 分類               | 使用技術             |
 | ------------------ | -------------------- |
@@ -18,23 +18,23 @@
 
 ---
 
-## セットアップ手順
+#### セットアップ手順
 
-### 1. リポジトリをクローン
+###### 1. リポジトリをクローン
 
 ```bash
 git clone https://github.com/m-bitterC2/milebako-sv.git
 cd milebako-sv
 ```
 
-### 2. 依存パッケージをインストール
+###### 2. 依存パッケージをインストール
 
 ```bash
 npm install express cors zod prisma @prisma/client
 npm install --save-dev typescript ts-node nodemon @types/express @types/cors @types/node
 ```
 
-### 3. Prisma セットアップとダミーデータ挿入
+###### 3. Prisma セットアップとダミーデータ挿入
 
 ```bash
 npx prisma init --datasource-provider sqlite
@@ -43,7 +43,7 @@ npx prisma generate
 npx prisma db seed
 ```
 
-### 4. サーバー起動
+###### 4. サーバー起動
 
 ```bash
 npm run dev
@@ -53,7 +53,7 @@ npx ts-node-dev src/index.ts
 
 ---
 
-## ディレクトリ構成
+#### ディレクトリ構成
 
 ```
 milebako-sv/
@@ -74,7 +74,7 @@ milebako-sv/
 
 ---
 
-## 開発のポイント
+#### 開発のポイント
 
 - エラーハンドリング共通化
 - `asyncHandler` を通してすべての非同期処理のエラーを統一的に扱う。
