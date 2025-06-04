@@ -71,7 +71,7 @@ export const TodoParamsSchema = z.object({
   id: z.string().min(1, "IDは必須です"),
 });
 
-// ===== 型定義 =====
+// ===== 型定義（Zodスキーマから生成） =====
 export type CreateTodoInput = z.infer<typeof CreateTodoSchema>;
 export type UpdateTodoInput = z.infer<typeof UpdateTodoSchema>;
 export type ReorderTodosInput = z.infer<typeof ReorderTodosSchema>;

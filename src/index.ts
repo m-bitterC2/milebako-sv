@@ -1,12 +1,13 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
-import todoRouter from "./routes/todo";
+import todoRouter from "./routes/todoRouter";
 import { errorHandler } from "./middlewares/errorHandler";
 import sanitizeHtml from "sanitize-html";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import hpp from "hpp";
 import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes";
 
 // .env ファイル（開発環境）から環境変数をロード
 dotenv.config();
@@ -54,7 +55,18 @@ app.use((req, _res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // HTTP ヘッダー関連のセキュリティ（Helmet）
 // ─────────────────────────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
+  })
+);
 app.disable("x-powered-by"); // Express バージョン情報を隠蔽
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -65,9 +77,9 @@ if (!isProduction) {
   app.use(
     cors({
       origin: "http://localhost:3000",
-      methods: ["GET", "POST", "PATCH", "DELETE"],
-      allowedHeaders: ["Content-Type", "Accept"],
-      credentials: false, // 認証なしのため false
+      credentials: true,
+      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
     })
   );
 } else {
@@ -75,9 +87,9 @@ if (!isProduction) {
   app.use(
     cors({
       origin: process.env.ALLOWED_ORIGIN,
-      methods: ["GET", "POST", "PATCH", "DELETE"],
-      allowedHeaders: ["Content-Type", "Accept"],
-      credentials: false,
+      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
     })
   );
 }
@@ -100,6 +112,7 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+app.use("/auth", apiLimiter);
 app.use("/todos", apiLimiter);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -119,8 +132,8 @@ if (isProduction) {
 // ─────────────────────────────────────────────────────────────────────────────
 // ルーティング設定
 // ─────────────────────────────────────────────────────────────────────────────
-// 「/todos」以下のルートは、routes/todo.ts の todoRouter が処理する
-app.use("/todos", todoRouter);
+app.use("/auth", authRoutes); // 認証ルート
+app.use("/todos", todoRouter); // タスクルート
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 共通エラーハンドリング

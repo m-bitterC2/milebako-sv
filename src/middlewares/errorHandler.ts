@@ -2,6 +2,20 @@ import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
 
+// ===== カスタムエラークラス =====
+export class AppError extends Error {
+  public statusCode: number;
+  public isOperational: boolean;
+
+  constructor(message: string, statusCode: number) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = true;
+
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 /**
  * 共通エラーハンドリングミドルウェア
  * @param err
@@ -30,6 +44,13 @@ export const errorHandler = (
     res.status(400).json({
       error: err.message,
       code: err.code,
+    });
+  }
+
+  // AppErrorの処理
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({
+      error: err.message,
     });
   }
 

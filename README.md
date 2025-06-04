@@ -15,6 +15,7 @@
 | バリデーション     | Zod                  |
 | ORM/DB             | Prisma + PostgreSQL  |
 | エラーハンドラ     | カスタムミドルウェア |
+| 認証               | JWT                  |
 
 ---
 
@@ -53,30 +54,10 @@ npx ts-node-dev src/index.ts
 
 ---
 
-#### ディレクトリ構成
-
-```
-milebako-sv/
-├── prisma/
-│   └── schema.prisma         # Prismaデータモデル
-├── src/
-│   ├── middlewares/
-│   │   └── errorHandler.ts   # 共通エラーハンドリング
-│   ├── routes/
-│   │   └── todo.ts           # /todos に関するルート定義
-│   ├── utils/
-│   │   └── asyncHandler.ts   # 非同期ルート用ラッパー
-│   ├── validators/
-│   │   └── todoValidator.ts  # Zodバリデーションスキーマ
-│   └── index.ts              # エントリーポイント
-└── README.md
-```
-
----
-
 #### 開発のポイント
 
 - エラーハンドリング共通化
 - `asyncHandler` を通してすべての非同期処理のエラーを統一的に扱う。
 - `Zod` によるバリデーション。
 - ファイルを用途別に分割し、**保守性の高い構成**に。
+- jwt によるユーザー認証

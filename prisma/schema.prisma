@@ -6,8 +6,23 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ユーザーとタスクの関連
+  tasks Task[]
+
+  @@map("users")
 }
 
 model Task {
@@ -19,6 +34,10 @@ model Task {
   position    Int        @default(0)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  // ユーザーとの関連
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("tasks")
 }
