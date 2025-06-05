@@ -16,7 +16,6 @@ dotenv.config();
 // アプリケーション設定
 // ─────────────────────────────────────────────────────────────────────────────
 const app: Express = express();
-const PORT = process.env.PORT || 8080;
 const isProduction = process.env.NODE_ENV === "production";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -143,10 +142,8 @@ app.use(errorHandler);
 // ─────────────────────────────────────────────────────────────────────────────
 // サーバ起動
 // ─────────────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+app.listen(() => {
   console.log(
-    `[${isProduction ? "Production" : "Development"}] Server is running${
-      isProduction ? "" : ` on port ${PORT}`
-    }`
+    `[${isProduction ? "Production" : "Development"}] Server is running`
   );
 });
