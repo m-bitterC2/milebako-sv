@@ -142,7 +142,7 @@ app.use(errorHandler);
 // ─────────────────────────────────────────────────────────────────────────────
 // サーバ起動
 // ─────────────────────────────────────────────────────────────────────────────
-app.listen(() => {
+app.listen(process.env.PORT || 8080, () => {
   console.log(
     `[${isProduction ? "Production" : "Development"}] Server is running`
   );
